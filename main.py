@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from routes import auth, student, teacher
+from routes import entry, student, teacher
 from models import Base
 from database import engine
 
@@ -9,7 +9,7 @@ app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
-app.include_router(auth.router)
+app.include_router(entry.router)
 app.include_router(student.router)
 app.include_router(teacher.router)
 
