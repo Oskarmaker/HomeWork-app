@@ -15,9 +15,4 @@ app.include_router(teacher.router)
 
 @app.get("/")
 def redirect(teacher: bool):
-    if teacher:
-        return RedirectResponse("/teacher/entry")
-    else:
-        return RedirectResponse("/student/entry")
-    
-
+    return RedirectResponse("/docs")
