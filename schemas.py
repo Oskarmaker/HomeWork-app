@@ -21,6 +21,7 @@ class TaskUpdate(BaseModel):
     deadline: datetime | None
     media_url: str | None
     students: list[str] | None #list of student logins
+    delete_students: bool = False
 
 
 class TaskResponse(BaseModel):

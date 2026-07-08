@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from database import get_db
-from schemas import TaskUpdate, TaskResponse
 from models import Teacher, Student, Tasks, TasksStudent
-from dependencies import get_current_user, require_student
+from dependencies import require_student
 import os
 
 
@@ -42,7 +41,6 @@ async def load_file(number: int, file: UploadFile = File(...), db: Session = Dep
 @router.post("/student/me/tasks/{number}/send")
 def send_task(number: int, db: Session = Depends(get_db), user = Depends(require_student)):
     student = db.query(Student).filter(Student.login == user["login"]).first()
-    task = db.query(Tasks).filter(Tasks.id == number).first()
     tasks_student = db.query(TasksStudent).filter(TasksStudent.task == number, TasksStudent.student == student.id).first()
     if tasks_student is None:
         raise HTTPException(status_code=404, detail="Task not found")

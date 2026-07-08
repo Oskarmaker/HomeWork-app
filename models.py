@@ -26,6 +26,7 @@ class Student(Base):
     login: Mapped[str] = mapped_column(nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(nullable=False)
     class_name: Mapped[str] = mapped_column(nullable=False)
+    teacher_id: Mapped[int] = mapped_column(ForeignKey("teacher.id"))
 
 class Tasks(Base):
     __tablename__ = "tasks"
@@ -35,6 +36,7 @@ class Tasks(Base):
     text: Mapped[str] = mapped_column(nullable=False)
     deadline: Mapped[datetime] = mapped_column(nullable=False)
     creator: Mapped[int] = mapped_column(ForeignKey("teacher.id"), nullable=False)
+    media_url: Mapped[str | None]
 
 class TasksStudent(Base):
     __tablename__ = "tasks_student"
