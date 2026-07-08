@@ -3,7 +3,7 @@ from database import get_db
 from models import Teacher, Student, Tasks, TasksStudent
 from dependencies import require_teacher
 from sqlalchemy.orm import Session
-from sсhemas import TaskCreate, TaskUpdate, RatingTask
+from schemas import TaskCreate, TaskUpdate, RatingTask
 
 
 router = APIRouter()
