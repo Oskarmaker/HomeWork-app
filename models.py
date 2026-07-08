@@ -33,7 +33,6 @@ class Tasks(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(nullable=False)
     text: Mapped[str] = mapped_column(nullable=False)
-    media_url: Mapped[str | None]
     deadline: Mapped[datetime] = mapped_column(nullable=False)
     creator: Mapped[int] = mapped_column(ForeignKey("teacher.id"), nullable=False)
 
@@ -45,3 +44,4 @@ class TasksStudent(Base):
     rating: Mapped[int | None]
     comment: Mapped[str | None]
     complete: Mapped[bool] = mapped_column(nullable=False, default=False)
+    media_url: Mapped[str | None]
