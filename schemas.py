@@ -28,7 +28,8 @@ class TaskResponse(BaseModel):
     id: int
     name: str
     text: str
-    media_url: str | None
+    answer_media: str | None # Файлы прикрепленные студентом
+    task_media:str | None # Файлы прикрепленные преподавателем
     deadline: datetime
     creator: str
     rating: int | None

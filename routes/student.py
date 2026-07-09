@@ -4,6 +4,7 @@ from database import get_db
 from models import Teacher, Student, Tasks, TasksStudent
 from dependencies import require_student
 import os
+from schemas import TaskResponse
 
 
 router = APIRouter()
@@ -11,8 +12,14 @@ router = APIRouter()
 @router.get("/student/me/tasks")
 def get_tasks(db: Session = Depends(get_db), user = Depends(require_student)):
     student = db.query(Student).filter(Student.login == user["login"]).first()
-    results = db.query(Tasks, TasksStudent).join(TasksStudent).filter(TasksStudent.student == student.id).all()
-    return results
+    results = db.query(Tasks, TasksStudent, Teacher).join(TasksStudent).join(Teacher, Tasks.creator == Teacher.id).filter(TasksStudent.student == student.id).all()
+    ans = []
+    for row in results:
+        task = row.Tasks
+        task_student = row.TasksStudent
+        creator = row.Teacher
+        ans.append(TaskResponse(id=task.id, name=task.name, text=task.text, answer_media=task_student.media_url, task_media=task.media_url, deadline=task.deadline, creator=f"{creator.surname} {creator.name} {creator.patronymic or ''}", rating=task_student.rating, comment=task_student.comment, complete=task_student.complete))
+    return ans
 
 @router.get("/student/me/tasks/{number}")
 def get_task(number: int, db: Session = Depends(get_db), user = Depends(require_student)):
