@@ -3,9 +3,11 @@ from fastapi.responses import RedirectResponse
 from routes import entry, student, teacher
 from models import Base
 from database import engine
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 Base.metadata.create_all(bind=engine)
 
