@@ -1,3 +1,11 @@
 .vscode/
 seed.py
 add_tasks.py
+
+# Python
+__pycache__/
+venv/
+
+# Runtime artifacts
+data/
+uploads/

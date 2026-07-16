@@ -4,6 +4,7 @@ from routes import entry, student, teacher
 from models import Base
 from database import engine
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI()
@@ -14,7 +15,8 @@ Base.metadata.create_all(bind=engine)
 app.include_router(entry.router)
 app.include_router(student.router)
 app.include_router(teacher.router)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/")
-def redirect(teacher: bool):
+def redirect():
     return RedirectResponse("/docs")

@@ -5,9 +5,21 @@ from models import Teacher, Student, Tasks, TasksStudent
 from dependencies import require_student
 import os
 from schemas import TaskResponse
+from fastapi.responses import FileResponse
+from utils import build_task_response
 
 
 router = APIRouter()
+
+@router.get("/student/me/tasks/{number}/file")
+def get_file(number: int, db: Session = Depends(get_db), user = Depends(require_student)):
+    student = db.query(Student).filter(Student.login == user["login"]).first()
+    task = db.query(TasksStudent).filter(TasksStudent.task == number, TasksStudent.student == student.id).first()
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.media_url is None:
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(task.media_url)
 
 @router.get("/student/me/tasks")
 def get_tasks(db: Session = Depends(get_db), user = Depends(require_student)):
@@ -18,16 +30,19 @@ def get_tasks(db: Session = Depends(get_db), user = Depends(require_student)):
         task = row.Tasks
         task_student = row.TasksStudent
         creator = row.Teacher
-        ans.append(TaskResponse(id=task.id, name=task.name, text=task.text, answer_media=task_student.media_url, task_media=task.media_url, deadline=task.deadline, creator=f"{creator.surname} {creator.name} {creator.patronymic or ''}", rating=task_student.rating, comment=task_student.comment, complete=task_student.complete))
+        ans.append(build_task_response(task, task_student, creator))
     return ans
 
 @router.get("/student/me/tasks/{number}")
 def get_task(number: int, db: Session = Depends(get_db), user = Depends(require_student)):
     student = db.query(Student).filter(Student.login == user["login"]).first()
-    result = db.query(Tasks, TasksStudent).join(TasksStudent).filter(TasksStudent.student == student.id).filter(Tasks.id == number).first()
+    result = db.query(Tasks, TasksStudent, Teacher).join(TasksStudent).join(Teacher, Tasks.creator == Teacher.id).filter(TasksStudent.student == student.id).filter(Tasks.id == number).first()
     if result is None:
         raise HTTPException(status_code=404, detail="Task not found")
-    return result
+    task = result.Tasks
+    task_student = result.TasksStudent
+    creator = result.Teacher
+    return build_task_response(task, task_student, creator)
 
 @router.post("/student/me/tasks/{number}/load")
 async def load_file(number: int, file: UploadFile = File(...), db: Session = Depends(get_db), user = Depends(require_student)):

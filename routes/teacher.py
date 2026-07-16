@@ -3,7 +3,8 @@ from database import get_db
 from models import Teacher, Student, Tasks, TasksStudent
 from dependencies import require_teacher
 from sqlalchemy.orm import Session
-from schemas import TaskCreate, TaskUpdate, RatingTask
+from schemas import TaskCreate, TaskUpdate, RatingTask, TaskResponse
+from utils import build_task_response
 
 
 router = APIRouter()
@@ -17,22 +18,33 @@ def get_students(db: Session = Depends(get_db), user = Depends(require_teacher))
 @router.get("/teacher/me/students/{student_login}/tasks")
 def get_student_tasks(student_login: str, db: Session = Depends(get_db), user = Depends(require_teacher)):
     teacher = db.query(Teacher).filter(Teacher.login == user["login"]).first()
+    if teacher is None:
+        raise HTTPException(status_code=403, detail="You don't have access")
     student = db.query(Student).filter(Student.teacher_id == teacher.id, Student.login == student_login).first()
     if student is None:
         raise HTTPException(status_code=404, detail="Student not found")
     results = db.query(Tasks, TasksStudent).join(TasksStudent).filter(TasksStudent.student == student.id).all()
-    return results
+    ans = []
+    for row in results:
+        task = row.Tasks
+        task_student = row.TasksStudent
+        ans.append(build_task_response(task, task_student, teacher))
+    return ans
 
 @router.get("/teacher/me/students/{student_login}/tasks/{number}")
 def get_student_task(student_login: str, number: int, db: Session = Depends(get_db), user = Depends(require_teacher)):
     teacher = db.query(Teacher).filter(Teacher.login == user["login"]).first()
+    if teacher is None:
+        raise HTTPException(status_code=403, detail="You don't have access")
     student = db.query(Student).filter(Student.teacher_id == teacher.id, Student.login == student_login).first()
     if student is None:
         raise HTTPException(status_code=404, detail="Student not found")
     result = db.query(Tasks, TasksStudent).join(TasksStudent).filter(TasksStudent.student == student.id, TasksStudent.task == number).first()
     if result is None:
         raise HTTPException(status_code=404, detail="Task not found")
-    return result
+    task = result.Tasks
+    task_student = result.TasksStudent
+    return build_task_response(task, task_student, teacher)
 
 @router.post("/teacher/me/students/{student_login}/tasks/{number}/rating")
 def set_rating(student_login: str, number: int, rating: RatingTask, db: Session = Depends(get_db), user = Depends(require_teacher)):

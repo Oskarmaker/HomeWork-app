@@ -1,0 +1,21 @@
+.task-card h2{
+    color: #003049;
+    font-size: 20pt;
+}
+.task-card{
+    list-style: none;
+    padding: 15px;
+    margin-bottom: 5px;
+    border: 5px solid #03045e;
+    border-radius: 15px;
+    background-color: #caf0f8;
+    max-width: 33%;
+}
+
+#logout {
+    position: fixed;
+    top: 20px;
+    left: 95%;
+    background-color: #03045e;
+    color: #ffffff;
+}

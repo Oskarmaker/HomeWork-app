@@ -1,9 +1,10 @@
 const token = localStorage.getItem("token");
+const API_URL = "http://127.0.0.1:8000";
 if (!token){
     window.location.href = "login.html";
 }
 async function loadTasks(params) {
-    const response = await fetch("http://127.0.0.1:8000/student/me/tasks", {
+    const response = await fetch(`${API_URL}/student/me/tasks`, {
         headers: {"Authorization": "Bearer " + token}
     });
     const data = await response.json();
@@ -15,6 +16,7 @@ async function loadTasks(params) {
         const title = document.createElement("h2");
         title.textContent = task.name;
         li.appendChild(title);
+        li.className = "task-card";
 
         const text = document.createElement("p");
         text.textContent = "Текст задания: " + task.text;
@@ -22,7 +24,7 @@ async function loadTasks(params) {
         
         if (task.task_media != null){
             const task_media_link = document.createElement("a");
-            task_media_link.href = task.task_media;
+            task_media_link.href = `${API_URL}/${task.task_media}`;
             task_media_link.textContent = "Открыть задание";
             li.appendChild(task_media_link);
         }
@@ -52,13 +54,26 @@ async function loadTasks(params) {
         li.appendChild(status);
 
         if (task.answer_media != null){
-            const link_answer_media = document.createElement("a");
-            link_answer_media.href = task.answer_media;
-            link_answer_media.textContent = "Мой ответ";
-            li.appendChild(link_answer_media);
+            const btn_answer_media = document.createElement("button");
+            btn_answer_media.textContent = "Мой ответ";
+            btn_answer_media.addEventListener("click", () => downloadAnswer(task.id));
+            li.appendChild(btn_answer_media);
         }
 
         list.appendChild(li);
     }
 }
+async function downloadAnswer(taskId) {
+    const response = await fetch(`${API_URL}/student/me/tasks/${taskId}/file`, {
+        headers: { "Authorization": "Bearer " + token}
+    });
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url);
+}
+const logoutBtn = document.getElementById("logout");
+logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
+});
 loadTasks();
