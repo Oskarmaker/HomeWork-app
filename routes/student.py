@@ -56,6 +56,8 @@ async def load_file(number: int, file: UploadFile = File(...), db: Session = Dep
     tasks_student = db.query(TasksStudent).filter(TasksStudent.task == number, TasksStudent.student == student.id).first()
     if tasks_student is None:
         raise HTTPException(status_code=404, detail="Task not found")
+    if tasks_student.complete:
+        raise HTTPException(status_code=409, detail="You cannot change the submitted task")
     tasks_student.media_url = file_path
     db.commit()
     return file_path
@@ -66,6 +68,8 @@ def send_task(number: int, db: Session = Depends(get_db), user = Depends(require
     tasks_student = db.query(TasksStudent).filter(TasksStudent.task == number, TasksStudent.student == student.id).first()
     if tasks_student is None:
         raise HTTPException(status_code=404, detail="Task not found")
+    if tasks_student.complete:
+        raise HTTPException(status_code=409, detail="You cannot submit a task for third time")
     tasks_student.complete = True
     db.commit()
     return {"message": "Task sent successfully"}
